@@ -86,22 +86,24 @@ public class InventoryMove implements Listener {
 
                 if(holder instanceof DoubleChest) {
                         DoubleChest doubleChest = (DoubleChest) holder;
-                        locations.add(doubleChest.getLeftSide().getLocation());
-                        locations.add(doubleChest.getRightSide().getLocation());
+                        addHolderLocation(doubleChest.getLeftSide(), locations);
+                        addHolderLocation(doubleChest.getRightSide(), locations);
                         return locations;
                 }
 
+                addHolderLocation(holder, locations);
+
+                return locations;
+        }
+
+        private void addHolderLocation(InventoryHolder holder, List<Location> locations) {
                 if(holder instanceof BlockState) {
                         locations.add(((BlockState) holder).getLocation());
-                        return locations;
                 }
 
                 if(holder instanceof HopperMinecart) {
                         locations.add(((HopperMinecart) holder).getLocation());
-                        return locations;
                 }
-
-                return locations;
         }
 
         private static class OwnerInfo {
