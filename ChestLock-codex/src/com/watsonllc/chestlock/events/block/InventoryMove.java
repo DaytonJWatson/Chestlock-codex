@@ -1,6 +1,7 @@
 package com.watsonllc.chestlock.events.block;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 import com.watsonllc.chestlock.Utils;
+import com.watsonllc.chestlock.logic.HopperOwnerData;
 import com.watsonllc.chestlock.logic.LockController;
 
 public class InventoryMove implements Listener {
@@ -25,23 +27,35 @@ public class InventoryMove implements Listener {
                 if(!isHopperInventory(event.getInitiator()))
                         return;
 
-                OwnerInfo initiatorInfo = getInventoryOwnerInfo(event.getInitiator());
-                OwnerInfo sourceInfo = getInventoryOwnerInfo(event.getSource());
-                OwnerInfo destinationInfo = getInventoryOwnerInfo(event.getDestination());
+                LockInfo sourceInfo = getInventoryLockInfo(event.getSource());
+                LockInfo destinationInfo = getInventoryLockInfo(event.getDestination());
 
                 if(!sourceInfo.hasProtectedLock && !destinationInfo.hasProtectedLock)
                         return;
 
-                if(!initiatorInfo.hasProtectedLock || initiatorInfo.conflictingOwners ||
-                                sourceInfo.conflictingOwners || destinationInfo.conflictingOwners) {
+                if(sourceInfo.conflictingOwners || destinationInfo.conflictingOwners) {
                         event.setCancelled(true);
                         return;
                 }
 
-                String owner = initiatorInfo.ownerName;
+                InventoryHolder initiatorHolder = event.getInitiator().getHolder();
+                String hopperOwner = null;
 
-                if((sourceInfo.hasProtectedLock && !owner.equals(sourceInfo.ownerName)) ||
-                                (destinationInfo.hasProtectedLock && !owner.equals(destinationInfo.ownerName))) {
+                if(initiatorHolder instanceof Hopper) {
+                        hopperOwner = HopperOwnerData.getOwner((Hopper) initiatorHolder);
+                }
+
+                if(hopperOwner == null && initiatorHolder instanceof HopperMinecart) {
+                        hopperOwner = HopperOwnerData.getOwner((HopperMinecart) initiatorHolder);
+                }
+
+                if(hopperOwner == null) {
+                        event.setCancelled(true);
+                        return;
+                }
+
+                if((sourceInfo.hasProtectedLock && !sourceInfo.allowedPlayers.contains(hopperOwner)) ||
+                                (destinationInfo.hasProtectedLock && !destinationInfo.allowedPlayers.contains(hopperOwner))) {
                         event.setCancelled(true);
                 }
         }
@@ -52,8 +66,8 @@ public class InventoryMove implements Listener {
                 return holder instanceof Hopper || holder instanceof HopperMinecart;
         }
 
-        private OwnerInfo getInventoryOwnerInfo(Inventory inventory) {
-                OwnerInfo info = new OwnerInfo();
+        private LockInfo getInventoryLockInfo(Inventory inventory) {
+                LockInfo info = new LockInfo();
 
                 List<Location> locations = getInventoryLocations(inventory.getHolder());
 
@@ -69,12 +83,17 @@ public class InventoryMove implements Listener {
 
                         info.hasProtectedLock = true;
 
-                        if(info.ownerName == null) {
-                                info.ownerName = lc.getOwner(location);
+                        List<String> allowedPlayers = lc.getAllowedPlayers(location);
+
+                        if(info.allowedPlayers.isEmpty()) {
+                                info.allowedPlayers = allowedPlayers == null ? Collections.emptyList() : new ArrayList<>(allowedPlayers);
                                 continue;
                         }
 
-                        if(!info.ownerName.equals(lc.getOwner(location)))
+                        if(allowedPlayers == null)
+                                continue;
+
+                        if(!info.allowedPlayers.equals(allowedPlayers))
                                 info.conflictingOwners = true;
                 }
 
@@ -106,9 +125,9 @@ public class InventoryMove implements Listener {
                 }
         }
 
-        private static class OwnerInfo {
+        private static class LockInfo {
                 private boolean hasProtectedLock;
                 private boolean conflictingOwners;
-                private String ownerName;
+                private List<String> allowedPlayers = new ArrayList<>();
         }
 }

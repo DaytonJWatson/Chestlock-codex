@@ -14,6 +14,7 @@ import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.config.Config;
 import com.watsonllc.chestlock.logic.LockController;
 import com.watsonllc.chestlock.logic.PlayerStateManager;
+import com.watsonllc.chestlock.logic.HopperOwnerData;
 
 public class BlockPlace implements Listener {
 	
@@ -23,10 +24,14 @@ public class BlockPlace implements Listener {
 	public void onBlockPlace(BlockPlaceEvent event) {
 	    Block block = event.getBlock();
 	    Player player = event.getPlayer();
-	    LockController lc = new LockController();
+            LockController lc = new LockController();
 
-	    if (!Utils.lockableBlock(block))
-	        return;
+            if (!Utils.lockableBlock(block))
+                return;
+
+            if (block.getType() == Material.HOPPER) {
+                HopperOwnerData.tagHopper(block, player.getName());
+            }
 
 	    // Don't allow placement if it's touching a lock and the player can't bypass
             if (adjacentToLock(lc, event, player) && !PlayerStateManager.isBypassing(player)) {
