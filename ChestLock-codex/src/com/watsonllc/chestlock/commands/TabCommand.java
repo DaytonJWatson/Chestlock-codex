@@ -23,7 +23,7 @@ public class TabCommand implements TabCompleter {
 		// chestlock public
 		// chestlock bypass
                 if (args.length == 1) {
-                        List<String> subCommands = Arrays.asList("add","remove","claim","destroy","public","bypass","group","groupcreate","groupdelete","groupadd","groupremove","groupleave","grouplist");
+                        List<String> subCommands = Arrays.asList("add","remove","claim","destroy","public","bypass","group");
                         for (String subCommand : subCommands) {
                                 if (subCommand.toLowerCase().startsWith(args[0].toLowerCase())) {
                                         completions.add(subCommand);
@@ -42,14 +42,10 @@ public class TabCommand implements TabCompleter {
                                 return completions;
                         }
 
-                        if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("groupadd") || args[0].equalsIgnoreCase("groupremove")) {
+                        if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove")) {
                                 for (Player player : Bukkit.getOnlinePlayers()) {
                                         completions.add(player.getName());
                                 }
-                        }
-
-                        if (args[0].equalsIgnoreCase("groupdelete") || args[0].equalsIgnoreCase("groupleave") || args[0].equalsIgnoreCase("grouplist")) {
-                                completions.addAll(groupController.getGroupNames());
                         }
 
                         if (args[0].equalsIgnoreCase("bypass"))
@@ -89,9 +85,6 @@ public class TabCommand implements TabCompleter {
                                 }
                         }
 
-                        if (args[0].equalsIgnoreCase("groupadd") || args[0].equalsIgnoreCase("groupremove")) {
-                                completions.addAll(groupController.getGroupNames());
-                        }
                 }
 
                 if (args.length == 4 && args[0].equalsIgnoreCase("group")) {

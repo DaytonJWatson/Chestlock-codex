@@ -128,10 +128,6 @@ public class Commands implements CommandExecutor {
                 // chestlock public toggle
                 // chestlock add <player>
                 // chestlock remove <player>
-                // chestlock group create <group>
-                // chestlock group delete <group>
-                // chestlock group leave <group>
-                // chestlock group list <group>
                 if(args.length == 2) {
                         switch(args[0]) {
                         case "claim":
@@ -147,23 +143,11 @@ public class Commands implements CommandExecutor {
                                 return AddOwner.logic(player, args[1], false);
                         case "remove":
                                 return RemoveOwner.logic(player, args[1], false);
-                        case "groupcreate":
-                                return GroupCommands.create(player, args[1]);
-                        case "groupdelete":
-                                return GroupCommands.delete(player, args[1]);
-                        case "groupleave":
-                                return GroupCommands.leave(player, args[1]);
-                        case "grouplist":
-                                return GroupCommands.list(player, args[1]);
                         default:
                                 return helpMenu(player);
                         }
                 }
 
-                // chestlock add <player> toggle
-                // chestlock remove <player> toggle
-                // chestlock groupadd <player> <group>
-                // chestlock groupremove <player> <group>
                 if(args.length == 3) {
                         switch(args[0]) {
                         case "add":
@@ -172,12 +156,6 @@ public class Commands implements CommandExecutor {
                         case "remove":
                                 if(args[2].equalsIgnoreCase("toggle"))
                                         return RemoveOwner.logic(player, args[1], true);
-                        case "groupadd":
-                                return GroupCommands.add(player, args[1], args[2]);
-                        case "groupremove":
-                                return GroupCommands.remove(player, args[1], args[2]);
-                        case "group":
-                                return handleGroup(player, args);
                         }
                 }
 
