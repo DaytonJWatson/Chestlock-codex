@@ -20,6 +20,22 @@ public class Utils {
 			return Config.getBoolean("lockables.BLAST_FURNACE");
 		case CHEST:
 			return Config.getBoolean("lockables.CHEST");
+		case COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case EXPOSED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case WEATHERED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case OXIDIZED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case WAXED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case WAXED_EXPOSED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case WAXED_WEATHERED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
+		case WAXED_OXIDIZED_COPPER_CHEST:
+			return Config.getBoolean("lockables.CHEST");
 		case DISPENSER:
 			return Config.getBoolean("lockables.DISPENSER");
 		case DROPPER:

@@ -42,6 +42,7 @@ lockables:
   BARREL: true
   BLAST_FURNACE: true
   CHEST: true
+  COPPER_CHEST: true
   DISPENSER: true
   DROPPER: true
   ENCHANTING_TABLE: true
@@ -115,4 +116,4 @@ actions:
   makePublic: 'makePublic'
   
 # dont change this 
-configVersion: 1.1.0
+configVersion: 1.2.0
