@@ -33,7 +33,7 @@ public class TabCommand implements TabCompleter {
 
                 if (args.length == 2) {
                         if (args[0].equalsIgnoreCase("group")) {
-                                List<String> groupSubCommands = Arrays.asList("create", "delete", "add", "remove", "leave", "list");
+                                List<String> groupSubCommands = Arrays.asList("create", "delete", "invite", "add", "remove", "accept", "decline", "invites", "leave", "list");
                                 for (String sub : groupSubCommands) {
                                         if (sub.startsWith(args[1].toLowerCase())) {
                                                 completions.add(sub);
@@ -63,15 +63,15 @@ public class TabCommand implements TabCompleter {
 		
                 if (args.length == 3) {
                         if (args[0].equalsIgnoreCase("group")) {
-                                if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")) {
+                                if (args[1].equalsIgnoreCase("invite") || args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")) {
                                         for (Player player : Bukkit.getOnlinePlayers()) {
                                                 completions.add(player.getName());
                                         }
                                         return completions;
                                 }
 
-                                if (args[1].equalsIgnoreCase("delete") || args[1].equalsIgnoreCase("leave") || args[1].equalsIgnoreCase("list")) {
-                                        completions.addAll(groupController.getGroupNames());
+                                if ((args[1].equalsIgnoreCase("accept") || args[1].equalsIgnoreCase("decline")) && sender instanceof Player) {
+                                        completions.addAll(groupController.getInviteGroupsForPlayer(((Player) sender).getName()));
                                         return completions;
                                 }
                         }
@@ -85,12 +85,6 @@ public class TabCommand implements TabCompleter {
                                 }
                         }
 
-                }
-
-                if (args.length == 4 && args[0].equalsIgnoreCase("group")) {
-                        if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")) {
-                                completions.addAll(groupController.getGroupNames());
-                        }
                 }
 
                 return completions;
