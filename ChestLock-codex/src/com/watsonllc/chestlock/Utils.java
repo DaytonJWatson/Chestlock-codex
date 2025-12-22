@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.InventoryHolder;
@@ -114,12 +115,21 @@ public class Utils {
 
 		if (holder instanceof DoubleChest) {
 			DoubleChest doubleChest = (DoubleChest) holder;
-			blocks.add(doubleChest.getLeftSide().getBlock());
-			blocks.add(doubleChest.getRightSide().getBlock());
+			addHolderBlock(doubleChest.getLeftSide(), blocks);
+			addHolderBlock(doubleChest.getRightSide(), blocks);
+			if (blocks.isEmpty()) {
+				blocks.add(block);
+			}
 		} else {
 			blocks.add(block);
 		}
 
 		return new ArrayList<>(blocks);
+	}
+
+	private static void addHolderBlock(InventoryHolder holder, Set<Block> blocks) {
+		if (holder instanceof BlockState) {
+			blocks.add(((BlockState) holder).getBlock());
+		}
 	}
 }
