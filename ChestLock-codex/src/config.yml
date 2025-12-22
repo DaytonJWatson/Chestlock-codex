@@ -88,7 +88,7 @@ messages:
   groupMissing: '&8[&6ChestLock&8] &cGroup &7%group% &cdoes not exist'
   groupNotOwner: '&8[&6ChestLock&8] &cOnly the group owner can do that'
   groupInviteSent: '&8[&6ChestLock&8] &7You invited &a%target% &7to group &6%group%'
-  groupInviteReceived: '&8[&6ChestLock&8] &7You were invited to join &6%group% &7by &a%player%'
+  groupInviteReceived: '&8[&6ChestLock&8] &7You were invited to join &6%group% &7by &a%player%&7. Use &6/chestlock group accept %group%&7 or &6/chestlock group decline %group%'
   groupInviteAlreadySent: '&8[&6ChestLock&8] &c%target% already has a pending invite'
   groupInviteAccepted: '&8[&6ChestLock&8] &7You joined group &a%group%'
   groupInviteDeclined: '&8[&6ChestLock&8] &7You declined the invite to &c%group%'
