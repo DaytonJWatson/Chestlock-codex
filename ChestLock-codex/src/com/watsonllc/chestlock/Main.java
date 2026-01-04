@@ -35,7 +35,7 @@ public class Main extends JavaPlugin {
                         getLogger().severe("#        ChestLock found conflicting configurations     #");
                         getLogger().severe("#            You NEED to delete your config.yml         #");
                         getLogger().severe("#                 and GENERATE a NEW one!               #");
-                        getLogger().severe("#            need help? Discord: unsocial6136           #");
+                        getLogger().severe("#         need help? Discord: discord.gg/BGurTEm2nj     #");
                         getLogger().severe("#########################################################");
                         return;
                 }
@@ -64,11 +64,11 @@ public class Main extends JavaPlugin {
 	                getLogger().warning(versionsCheck);
 	                getLogger().warning("#             Download the latest update at             #");
 	                getLogger().warning("#  https://www.spigotmc.org/resources/chestlock.81204/  #");
-	                getLogger().warning("#            need help? Discord: unsocial6136           #");
+	                getLogger().warning("#         need help? Discord: discord.gg/BGurTEm2nj     #");
 	                getLogger().warning("#########################################################");
 	            }else{
 	                getLogger().info("ChestLock is up to date!");
-	                getLogger().info("Please report bugs on discord: unsocial6136");
+	                getLogger().info("Please report bugs on discord.gg/BGurTEm2nj");
 	            }
 	        }catch(Exception e1) {
 	            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Could not proceed update-checking!");

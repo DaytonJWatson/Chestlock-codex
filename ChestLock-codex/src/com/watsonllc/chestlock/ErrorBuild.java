@@ -17,7 +17,7 @@ public class ErrorBuild implements Listener {
 
 	private String errorMessage = Utils.color("&c ChestLock was disabled because of conflicting configuration files. "
 			+ "Please delete your 'config.yml' found in your &7/path/to/server/plugins/ChestLock &cfolder and reload the plugin. "
-			+ "If the issue persists, contact &funsocial6136 &con Discord.");
+			+ "If the issue persists, join discord.gg/BGurTEm2nj");
 	
 	private static HashMap<UUID, Boolean> gotWarning = new HashMap<>();
 	
