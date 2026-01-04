@@ -37,7 +37,6 @@ public class InventoryMove implements Listener {
         private static final AtomicLong handlerNanos = new AtomicLong();
         private static final AtomicLong lockLookupNanos = new AtomicLong();
         private static final AtomicLong groupLookupNanos = new AtomicLong();
-        private static final AtomicLong eventCount = new AtomicLong();
 
         @EventHandler
         public void onInventoryMove(InventoryMoveItemEvent event) {
@@ -112,10 +111,11 @@ public class InventoryMove implements Listener {
                 } finally {
                         long elapsed = System.nanoTime() - handlerStart;
                         handlerNanos.addAndGet(elapsed);
-                        long count = eventCount.incrementAndGet();
-                        if (count % 200 == 0) {
-                                Main.instance.getLogger().info(String.format("Hopper timings events=%d handler=%.2fms lock=%.2fms group=%.2fms", count, handlerNanos.get() / 1_000_000.0 / count, lockLookupNanos.get() / 1_000_000.0 / count, groupLookupNanos.get() / 1_000_000.0 / count));
-                        }
+                        // Timing counters retained for profiling but no console output to avoid spam
+                        // handlerNanos accumulates total handler time
+                        // lockLookupNanos accumulates lock map resolution time
+                        // groupLookupNanos accumulates group/permissions time
+                        // Remove or export as needed during profiling
                 }
         }
 
