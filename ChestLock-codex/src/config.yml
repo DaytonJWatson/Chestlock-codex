@@ -1,7 +1,7 @@
 ##################################################################################################################################
 #                                                                                                                                #
 #                                                        ChestLock                                                               #
-#                                                         v1.5.3                                                                 #
+#                                                         v1.5.4                                                                 #
 #                        Secure player chests with the easy-to-use Chest Lock Plugin for Spigot servers.                         #
 #                                              Need help? discord.gg/BGurTEm2nj                                                  #
 #                                                                                                                                #
@@ -15,7 +15,7 @@ settings:
   updateChecker: true
 
   # Prefix for all messages. Leave blank to disable.
-  prefix: '&8[&6ChestLock&8] &7'
+  prefix: '&8[&6ChestLock&8] &7 '
   
   # Automatically lock chests when theyre placed
   autoLock: true
