@@ -15,7 +15,7 @@ settings:
   updateChecker: true
 
   # Prefix for all messages. Leave blank to disable.
-  prefix: '&8[&6ChestLock&8] &7 '
+  prefix: '&8[&6ChestLock&8] &7'
   
   # Automatically lock chests when theyre placed
   autoLock: true
