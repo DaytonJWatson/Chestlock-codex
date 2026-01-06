@@ -10,8 +10,9 @@ public class Config {
 	}
 	
 	public static void createConfig() {
-		Main.instance.getConfig().options().copyDefaults();
 		Main.instance.saveDefaultConfig();
+		Main.instance.reloadConfig();
+		Main.instance.getConfig().options().copyDefaults(true);
 	}
 	
 	public static void save() {
@@ -20,6 +21,7 @@ public class Config {
 	
 	public static void reload() {
 		Main.instance.reloadConfig();
+		Main.instance.getConfig().options().copyDefaults(true);
 	}
 	
 	public static String getConfigVersion() {
