@@ -6,3 +6,4 @@ main: com.watsonllc.chestlock.Main
 commands:
   chestlock:
     description: Control your chest locks
+    aliases: [cl, lock]

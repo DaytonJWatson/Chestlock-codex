@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import com.watsonllc.chestlock.commands.Commands;
 import com.watsonllc.chestlock.config.Config;
 import com.watsonllc.chestlock.logic.GroupController;
+import com.watsonllc.chestlock.logic.PlayerStateManager;
 import org.bukkit.Bukkit;
 
 public class GroupCommands {
@@ -23,6 +24,7 @@ public class GroupCommands {
 
                 if (GROUP_CONTROLLER.createGroup(groupName, player.getName())) {
                         player.sendMessage(Config.getString("messages.groupCreated").replace("%group%", groupName));
+                        PlayerStateManager.setSelectedGroup(player, groupName);
                         return true;
                 }
 
@@ -47,6 +49,9 @@ public class GroupCommands {
 
                 if (GROUP_CONTROLLER.deleteGroup(ownedGroup, player.getName())) {
                         player.sendMessage(Config.getString("messages.groupDeleted").replace("%group%", ownedGroup));
+                        if (ownedGroup.equalsIgnoreCase(PlayerStateManager.getSelectedGroup(player))) {
+                                PlayerStateManager.setSelectedGroup(player, null);
+                        }
                         return true;
                 }
 
@@ -54,20 +59,13 @@ public class GroupCommands {
                 return false;
         }
 
-        public static boolean invite(Player player, String target) {
+        public static boolean invite(Player player, String target, String groupName) {
                 if (!hasPermission(player, "chestlock.group.invite"))
                         return false;
 
-                String ownedGroup = GROUP_CONTROLLER.getOwnedGroup(player.getName());
-                if (ownedGroup == null) {
-                        String memberGroup = GROUP_CONTROLLER.getGroupForPlayer(player.getName());
-                        if (memberGroup != null) {
-                                player.sendMessage(Config.getString("messages.groupNotOwner"));
-                                return false;
-                        }
-                        player.sendMessage(Config.getString("messages.groupNotInGroup"));
+                String ownedGroup = resolveOwnedGroup(player, groupName);
+                if (ownedGroup == null)
                         return false;
-                }
 
                 String targetGroup = GROUP_CONTROLLER.getGroupForPlayer(target);
                 if (targetGroup != null) {
@@ -100,20 +98,13 @@ public class GroupCommands {
                 return false;
         }
 
-        public static boolean remove(Player player, String target) {
+        public static boolean remove(Player player, String target, String groupName) {
                 if (!hasPermission(player, "chestlock.group.remove"))
                         return false;
 
-                String ownedGroup = GROUP_CONTROLLER.getOwnedGroup(player.getName());
-                if (ownedGroup == null) {
-                        String memberGroup = GROUP_CONTROLLER.getGroupForPlayer(player.getName());
-                        if (memberGroup != null) {
-                                player.sendMessage(Config.getString("messages.groupNotOwner"));
-                                return false;
-                        }
-                        player.sendMessage(Config.getString("messages.groupNotInGroup"));
+                String ownedGroup = resolveOwnedGroup(player, groupName);
+                if (ownedGroup == null)
                         return false;
-                }
 
                 if (target.equalsIgnoreCase(player.getName())) {
                         player.sendMessage(Config.getString("messages.groupCannotRemoveSelf"));
@@ -144,6 +135,9 @@ public class GroupCommands {
 
                 if (GROUP_CONTROLLER.leaveGroup(groupName, player.getName())) {
                         player.sendMessage(Config.getString("messages.groupLeft").replace("%group%", groupName));
+                        if (groupName.equalsIgnoreCase(PlayerStateManager.getSelectedGroup(player))) {
+                                PlayerStateManager.setSelectedGroup(player, null);
+                        }
                         return true;
                 }
 
@@ -215,6 +209,30 @@ public class GroupCommands {
                 return false;
         }
 
+        public static boolean select(Player player, String groupName) {
+                if (groupName == null || groupName.isEmpty()) {
+                        player.sendMessage(Config.getString("messages.groupNotInGroup"));
+                        return false;
+                }
+
+                String playerGroup = GROUP_CONTROLLER.getGroupForPlayer(player.getName());
+                if (playerGroup != null && playerGroup.equalsIgnoreCase(groupName)) {
+                        PlayerStateManager.setSelectedGroup(player, groupName);
+                        player.sendMessage(Config.getString("messages.groupSelected").replace("%group%", groupName));
+                        return true;
+                }
+
+                String ownedGroup = GROUP_CONTROLLER.getOwnedGroup(player.getName());
+                if (ownedGroup != null && ownedGroup.equalsIgnoreCase(groupName)) {
+                        PlayerStateManager.setSelectedGroup(player, groupName);
+                        player.sendMessage(Config.getString("messages.groupSelected").replace("%group%", groupName));
+                        return true;
+                }
+
+                player.sendMessage(Config.getString("messages.groupSelectInvalid").replace("%group%", groupName));
+                return false;
+        }
+
         private static String resolveInviteGroup(Player player, String groupName) {
                 if (GROUP_CONTROLLER.getGroupForPlayer(player.getName()) != null) {
                         player.sendMessage(Config.getString("messages.groupAlreadyIn").replace("%group%", GROUP_CONTROLLER.getGroupForPlayer(player.getName())));
@@ -247,5 +265,31 @@ public class GroupCommands {
 
                 player.sendMessage(Config.getString("messages.noPermission"));
                 return false;
+        }
+
+        private static String resolveOwnedGroup(Player player, String groupName) {
+                if (groupName != null && !groupName.isEmpty()) {
+                        if (GROUP_CONTROLLER.isOwner(groupName, player.getName()))
+                                return groupName;
+                        player.sendMessage(Config.getString("messages.groupNotOwner"));
+                        return null;
+                }
+
+                String selected = PlayerStateManager.getSelectedGroup(player);
+                if (selected != null && GROUP_CONTROLLER.isOwner(selected, player.getName()))
+                        return selected;
+
+                String ownedGroup = GROUP_CONTROLLER.getOwnedGroup(player.getName());
+                if (ownedGroup == null) {
+                        String memberGroup = GROUP_CONTROLLER.getGroupForPlayer(player.getName());
+                        if (memberGroup != null) {
+                                player.sendMessage(Config.getString("messages.groupNotOwner"));
+                                return null;
+                        }
+                        player.sendMessage(Config.getString("messages.groupNotInGroup"));
+                        return null;
+                }
+
+                return ownedGroup;
         }
 }

@@ -8,16 +8,18 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.commands.Commands;
+import com.watsonllc.chestlock.commands.ToggleState;
 import com.watsonllc.chestlock.config.Config;
+import com.watsonllc.chestlock.logic.ActionMessages;
 import com.watsonllc.chestlock.logic.LockController;
 import com.watsonllc.chestlock.logic.PlayerActionType;
 import com.watsonllc.chestlock.logic.PlayerStateManager;
+import com.watsonllc.chestlock.Utils;
 
 public class DestroyLock {
 	
-        public static boolean logic(Player player, boolean toggle) {
+        public static boolean logic(Player player, ToggleState toggleState) {
                 if(Commands.usePermissions()) {
                         if(!player.hasPermission("chestlock.destroy")) {
                                 player.sendMessage(Config.getString("messages.noPermission"));
@@ -25,21 +27,32 @@ public class DestroyLock {
                         }
                 }
 
-                if(PlayerStateManager.hasAction(player, PlayerActionType.DESTROY_LOCK)) {
-                        String actionMSG = Config.getString("messages.cancelAction");
-                        actionMSG = actionMSG.replace("%action%", Config.getString("actions.destroyLock"));
-                        player.sendMessage(actionMSG);
-                        PlayerStateManager.clearAction(player, PlayerActionType.DESTROY_LOCK);
-                        return false;
+                if (toggleState == ToggleState.OFF) {
+                        if (PlayerStateManager.hasAction(player, PlayerActionType.DESTROY_LOCK)) {
+                                PlayerStateManager.clearAction(player, PlayerActionType.DESTROY_LOCK);
+                                String disabled = Config.getString("messages.modeDisabled");
+                                disabled = disabled.replace("%action%", ActionMessages.getActionName(PlayerActionType.DESTROY_LOCK));
+                                player.sendMessage(disabled);
+                                return true;
+                        }
+                        player.sendMessage(Config.getString("messages.noActionToCancel"));
+                        return true;
                 }
 
-                PlayerStateManager.startAction(player, PlayerActionType.DESTROY_LOCK, toggle, null);
-                String destroyLockMSG = Config.getString("messages.destroyLockTip");
-                player.sendMessage(destroyLockMSG);
+                if (toggleState == ToggleState.TOGGLE && PlayerStateManager.hasAction(player, PlayerActionType.DESTROY_LOCK)) {
+                        String actionMSG = Config.getString("messages.cancelAction");
+                        actionMSG = actionMSG.replace("%action%", ActionMessages.getActionName(PlayerActionType.DESTROY_LOCK));
+                        player.sendMessage(actionMSG);
+                        PlayerStateManager.clearAction(player, PlayerActionType.DESTROY_LOCK);
+                        return true;
+                }
 
-                PlayerStateManager.scheduleTimeout(player, PlayerActionType.DESTROY_LOCK, Config.getString("actions.destroyLock"));
+                PlayerStateManager.startAction(player, PlayerActionType.DESTROY_LOCK, true, null);
+                player.sendMessage(ActionMessages.getModeStart(PlayerActionType.DESTROY_LOCK, null));
 
-                return false;
+                PlayerStateManager.scheduleTimeout(player, PlayerActionType.DESTROY_LOCK, ActionMessages.getActionName(PlayerActionType.DESTROY_LOCK));
+
+                return true;
         }
 	
         public static void eventChecker(PlayerInteractEvent event) {

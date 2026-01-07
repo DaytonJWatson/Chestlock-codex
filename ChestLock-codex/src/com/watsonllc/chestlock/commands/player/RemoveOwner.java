@@ -6,7 +6,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.commands.Commands;
+import com.watsonllc.chestlock.commands.ToggleState;
 import com.watsonllc.chestlock.config.Config;
+import com.watsonllc.chestlock.logic.ActionMessages;
 import com.watsonllc.chestlock.logic.LockController;
 import com.watsonllc.chestlock.logic.PlayerActionType;
 import com.watsonllc.chestlock.logic.PlayerStateManager;
@@ -14,7 +16,7 @@ import com.watsonllc.chestlock.logic.ActionState;
 
 public class RemoveOwner {
 
-        public static boolean logic(Player player, String target, boolean toggle) {
+        public static boolean logic(Player player, String target, ToggleState toggleState) {
                 if(Commands.usePermissions()) {
                         if(!player.hasPermission("chestlock.remove")) {
                                 player.sendMessage(Config.getString("messages.noPermission"));
@@ -22,22 +24,32 @@ public class RemoveOwner {
                         }
                 }
 
-                if(PlayerStateManager.hasAction(player, PlayerActionType.REMOVE_OWNER)) {
-                        String actionMSG = Config.getString("messages.cancelAction");
-                        actionMSG = actionMSG.replace("%action%", Config.getString("actions.removeOwner"));
-                        player.sendMessage(actionMSG);
-                        PlayerStateManager.clearAction(player, PlayerActionType.REMOVE_OWNER);
-                        return false;
+                if (toggleState == ToggleState.OFF) {
+                        if (PlayerStateManager.hasAction(player, PlayerActionType.REMOVE_OWNER)) {
+                                PlayerStateManager.clearAction(player, PlayerActionType.REMOVE_OWNER);
+                                String disabled = Config.getString("messages.modeDisabled");
+                                disabled = disabled.replace("%action%", ActionMessages.getActionName(PlayerActionType.REMOVE_OWNER));
+                                player.sendMessage(disabled);
+                                return true;
+                        }
+                        player.sendMessage(Config.getString("messages.noActionToCancel"));
+                        return true;
                 }
 
-                PlayerStateManager.startAction(player, PlayerActionType.REMOVE_OWNER, toggle, target);
-                String unshareLockTipMSG = Config.getString("messages.unshareLockTip");
-                unshareLockTipMSG = unshareLockTipMSG.replace("%target%", target);
-                player.sendMessage(unshareLockTipMSG);
+                if (toggleState == ToggleState.TOGGLE && PlayerStateManager.hasAction(player, PlayerActionType.REMOVE_OWNER)) {
+                        String actionMSG = Config.getString("messages.cancelAction");
+                        actionMSG = actionMSG.replace("%action%", ActionMessages.getActionName(PlayerActionType.REMOVE_OWNER));
+                        player.sendMessage(actionMSG);
+                        PlayerStateManager.clearAction(player, PlayerActionType.REMOVE_OWNER);
+                        return true;
+                }
 
-                PlayerStateManager.scheduleTimeout(player, PlayerActionType.REMOVE_OWNER, Config.getString("actions.removeOwner"));
+                PlayerStateManager.startAction(player, PlayerActionType.REMOVE_OWNER, true, target);
+                player.sendMessage(ActionMessages.getModeStart(PlayerActionType.REMOVE_OWNER, target));
 
-                return false;
+                PlayerStateManager.scheduleTimeout(player, PlayerActionType.REMOVE_OWNER, ActionMessages.getActionName(PlayerActionType.REMOVE_OWNER));
+
+                return true;
         }
 	
         public static void eventChecker(PlayerInteractEvent event) {
