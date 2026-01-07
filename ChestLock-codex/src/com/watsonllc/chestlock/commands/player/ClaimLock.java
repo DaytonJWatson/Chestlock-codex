@@ -4,18 +4,16 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.commands.Commands;
-import com.watsonllc.chestlock.commands.ToggleState;
 import com.watsonllc.chestlock.config.Config;
-import com.watsonllc.chestlock.logic.ActionMessages;
 import com.watsonllc.chestlock.logic.LockController;
 import com.watsonllc.chestlock.logic.PlayerActionType;
 import com.watsonllc.chestlock.logic.PlayerStateManager;
-import com.watsonllc.chestlock.Utils;
 
 public class ClaimLock {
 	
-        public static boolean logic(Player player, ToggleState toggleState) {
+        public static boolean logic(Player player, boolean toggle) {
                 if(Commands.usePermissions()) {
                         if(!player.hasPermission("chestlock.claim")) {
                                 player.sendMessage(Config.getString("messages.noPermission"));
@@ -23,32 +21,21 @@ public class ClaimLock {
                         }
                 }
 
-                if (toggleState == ToggleState.OFF) {
-                        if (PlayerStateManager.hasAction(player, PlayerActionType.CLAIM_LOCK)) {
-                                PlayerStateManager.clearAction(player, PlayerActionType.CLAIM_LOCK);
-                                String disabled = Config.getString("messages.modeDisabled");
-                                disabled = disabled.replace("%action%", ActionMessages.getActionName(PlayerActionType.CLAIM_LOCK));
-                                player.sendMessage(disabled);
-                                return true;
-                        }
-                        player.sendMessage(Config.getString("messages.noActionToCancel"));
-                        return true;
-                }
-
-                if (toggleState == ToggleState.TOGGLE && PlayerStateManager.hasAction(player, PlayerActionType.CLAIM_LOCK)) {
+                if(PlayerStateManager.hasAction(player, PlayerActionType.CLAIM_LOCK)) {
                         String actionMSG = Config.getString("messages.cancelAction");
-                        actionMSG = actionMSG.replace("%action%", ActionMessages.getActionName(PlayerActionType.CLAIM_LOCK));
+                        actionMSG = actionMSG.replace("%action%", Config.getString("actions.claimLock"));
                         player.sendMessage(actionMSG);
                         PlayerStateManager.clearAction(player, PlayerActionType.CLAIM_LOCK);
-                        return true;
+                        return false;
                 }
 
-                PlayerStateManager.startAction(player, PlayerActionType.CLAIM_LOCK, true, null);
-                player.sendMessage(ActionMessages.getModeStart(PlayerActionType.CLAIM_LOCK, null));
+                PlayerStateManager.startAction(player, PlayerActionType.CLAIM_LOCK, toggle, null);
+                String claimLockTipMSG = Config.getString("messages.claimLockTip");
+                player.sendMessage(claimLockTipMSG);
 
-                PlayerStateManager.scheduleTimeout(player, PlayerActionType.CLAIM_LOCK, ActionMessages.getActionName(PlayerActionType.CLAIM_LOCK));
+                PlayerStateManager.scheduleTimeout(player, PlayerActionType.CLAIM_LOCK, Config.getString("actions.claimLock"));
 
-                return true;
+                return false;
         }
 	
         public static void eventChecker(PlayerInteractEvent event) {

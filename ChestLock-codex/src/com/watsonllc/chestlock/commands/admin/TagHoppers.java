@@ -18,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 
 import com.watsonllc.chestlock.Main;
-import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.config.Config;
 import com.watsonllc.chestlock.logic.HopperCache;
 import com.watsonllc.chestlock.logic.HopperOwnerData;
@@ -34,8 +33,8 @@ public class TagHoppers {
                 }
 
                 if (args.length < 3) {
-                        sender.sendMessage(Config.getString("messages.invalidScope"));
-                        sender.sendMessage("Usage: /cl taghoppers <SERVER|player> <radius|world> [minecarts]");
+                        sender.sendMessage(Config.getString("messages.invalidLock"));
+                        sender.sendMessage("Usage: /chestlock taghoppers <SERVER|player> <radius|world> [minecarts]");
                         return false;
                 }
 
@@ -43,19 +42,14 @@ public class TagHoppers {
                 String scope = args[2];
                 boolean includeMinecarts = args.length > 3 && args[3].equalsIgnoreCase("minecarts");
 
-                Integer radius = parseRadius(scope);
-                if (radius != null && radius <= 0) {
-                        sender.sendMessage(Config.getString("messages.invalidRadius"));
-                        return false;
-                }
-
                 World targetWorld = resolveWorld(sender, scope);
                 if (targetWorld == null) {
-                        sender.sendMessage(Config.getString("messages.invalidWorld"));
+                        sender.sendMessage(Config.getString("messages.invalidLock"));
                         return false;
                 }
 
                 Location center = null;
+                Integer radius = parseRadius(scope);
                 if (radius != null) {
                         if (!(sender instanceof Player)) {
                                 sender.sendMessage(Config.getString("messages.invalidInstance"));
@@ -67,7 +61,7 @@ public class TagHoppers {
                 List<Chunk> matchingChunks = selectChunks(targetWorld, center, radius);
 
                 if (matchingChunks.isEmpty()) {
-                        sender.sendMessage(Config.getString("messages.invalidScope"));
+                        sender.sendMessage("No loaded chunks matched the requested scope.");
                         return true;
                 }
 
@@ -116,12 +110,9 @@ public class TagHoppers {
                 final String normalizedOwner = ownerName.toUpperCase(Locale.ENGLISH).equals("SERVER") ? "SERVER" : ownerName;
                 final Deque<Chunk> queue = new ArrayDeque<>(chunks);
 
-                String started = Config.getString("messages.taghoppersStarted");
-                started = started.replace("%chunks%", String.valueOf(queue.size()));
-                sender.sendMessage(started);
+                sender.sendMessage("Starting hopper tagging for " + queue.size() + " loaded chunks...");
 
                 final int[] totals = new int[] { 0, 0 };
-                final int[] ticks = new int[] { 0 };
 
                 Bukkit.getScheduler().runTaskTimer(Main.instance, task -> {
                         int processed = 0;
@@ -158,20 +149,10 @@ public class TagHoppers {
                                 }
                         }
 
-                        ticks[0]++;
-                        if (ticks[0] % 20 == 0) {
-                                String progress = Config.getString("messages.taghoppersProgress");
-                                progress = progress.replace("%hoppers%", String.valueOf(totals[0]));
-                                progress = progress.replace("%minecarts%", String.valueOf(totals[1]));
-                                sender.sendMessage(progress);
-                        }
-
                         if (queue.isEmpty()) {
-                                String minecartsSegment = includeMinecarts ? Utils.color(" &7and &e" + totals[1] + " &7hopper minecarts") : "";
-                                String done = Config.getString("messages.taghoppersDone");
-                                done = done.replace("%hoppers%", String.valueOf(totals[0]));
-                                done = done.replace("%minecarts%", minecartsSegment);
-                                sender.sendMessage(done);
+                                sender.sendMessage("Tagged " + totals[0] + " hoppers"
+                                                + (includeMinecarts ? " and " + totals[1] + " hopper minecarts" : "")
+                                                + ".");
                                 task.cancel();
                         }
                 }, 0L, 1L);

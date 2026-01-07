@@ -10,7 +10,6 @@ import com.watsonllc.chestlock.config.GroupsData;
 import com.watsonllc.chestlock.config.LocksData;
 import com.watsonllc.chestlock.events.Events;
 import com.watsonllc.chestlock.logic.GroupController;
-import com.watsonllc.chestlock.logic.ActionBarReminder;
 import com.watsonllc.chestlock.logic.HopperCache;
 import com.watsonllc.chestlock.logic.LockController;
 
@@ -49,7 +48,6 @@ public class Main extends JavaPlugin {
 		HopperCache.startTickCounter();
 		Commands.setup();
 		Events.setup();
-		ActionBarReminder.start();
 
 		checkForUpdates = Config.getBoolean("settings.updateChecker");
 
