@@ -9,11 +9,6 @@ import org.bukkit.entity.Player;
 
 import com.watsonllc.chestlock.Utils;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-
 public final class HelpService {
     private static final List<String> TOPICS = Arrays.asList("locks", "owners", "groups", "admin");
 
@@ -119,18 +114,9 @@ public final class HelpService {
     }
 
     private static void sendHelpLine(Player player, String command, String description, boolean run) {
-        String baseText = Utils.color("&6• &e" + command + " &7- " + description + " ");
-        TextComponent base = new TextComponent();
-        for (TextComponent part : TextComponent.fromLegacyText(baseText)) {
-            base.addExtra(part);
-        }
-
-        TextComponent action = new TextComponent(Utils.color(run ? "&a[Run]" : "&e[Suggest]"));
-        action.setClickEvent(new ClickEvent(run ? ClickEvent.Action.RUN_COMMAND : ClickEvent.Action.SUGGEST_COMMAND, command));
-        action.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Utils.color(description)).create()));
-        base.addExtra(action);
-        player.spigot().sendMessage(base);
+        String hint = run ? "&aRun:" : "&eUse:";
+        String line = "&6• &e" + command + " &7- " + description + " &7(" + hint + " &f" + command + "&7)";
+        player.sendMessage(Utils.color(line));
     }
 
     private static boolean isNumeric(String value) {
