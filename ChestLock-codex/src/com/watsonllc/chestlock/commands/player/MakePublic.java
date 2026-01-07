@@ -6,16 +6,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import com.watsonllc.chestlock.Utils;
 import com.watsonllc.chestlock.commands.Commands;
-import com.watsonllc.chestlock.commands.ToggleState;
 import com.watsonllc.chestlock.config.Config;
-import com.watsonllc.chestlock.logic.ActionMessages;
 import com.watsonllc.chestlock.logic.LockController;
 import com.watsonllc.chestlock.logic.PlayerActionType;
 import com.watsonllc.chestlock.logic.PlayerStateManager;
 
 public class MakePublic {
 
-        public static boolean logic(Player player, ToggleState toggleState) {
+        public static boolean logic(Player player, boolean toggle) {
                 if (Commands.usePermissions()) {
                         if (!player.hasPermission("chestlock.public")) {
                                 player.sendMessage(Config.getString("messages.noPermission"));
@@ -23,30 +21,19 @@ public class MakePublic {
                         }
                 }
 
-                if (toggleState == ToggleState.OFF) {
-                        if (PlayerStateManager.hasAction(player, PlayerActionType.MAKE_PUBLIC)) {
-                                PlayerStateManager.clearAction(player, PlayerActionType.MAKE_PUBLIC);
-                                String disabled = Config.getString("messages.modeDisabled");
-                                disabled = disabled.replace("%action%", ActionMessages.getActionName(PlayerActionType.MAKE_PUBLIC));
-                                player.sendMessage(disabled);
-                                return true;
-                        }
-                        player.sendMessage(Config.getString("messages.noActionToCancel"));
-                        return true;
-                }
-
-                if (toggleState == ToggleState.TOGGLE && PlayerStateManager.hasAction(player, PlayerActionType.MAKE_PUBLIC)) {
+                if (PlayerStateManager.hasAction(player, PlayerActionType.MAKE_PUBLIC)) {
                         String actionMSG = Config.getString("messages.cancelAction");
-                        actionMSG = actionMSG.replace("%action%", ActionMessages.getActionName(PlayerActionType.MAKE_PUBLIC));
+                        actionMSG = actionMSG.replace("%action%", Config.getString("actions.makePublic"));
                         player.sendMessage(actionMSG);
                         PlayerStateManager.clearAction(player, PlayerActionType.MAKE_PUBLIC);
-                        return true;
+                        return false;
                 }
 
-                PlayerStateManager.startAction(player, PlayerActionType.MAKE_PUBLIC, true, null);
-                player.sendMessage(ActionMessages.getModeStart(PlayerActionType.MAKE_PUBLIC, null));
+                PlayerStateManager.startAction(player, PlayerActionType.MAKE_PUBLIC, toggle, null);
+                String makePublicTip = Config.getString("messages.makePublicTip");
+                player.sendMessage(makePublicTip);
 
-                PlayerStateManager.scheduleTimeout(player, PlayerActionType.MAKE_PUBLIC, ActionMessages.getActionName(PlayerActionType.MAKE_PUBLIC));
+                PlayerStateManager.scheduleTimeout(player, PlayerActionType.MAKE_PUBLIC, Config.getString("actions.makePublic"));
 
                 return true;
         }

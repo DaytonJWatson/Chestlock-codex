@@ -10,11 +10,8 @@ import com.watsonllc.chestlock.events.block.InventoryMove;
 import com.watsonllc.chestlock.events.block.BlockPlace;
 import com.watsonllc.chestlock.events.block.EntityExplode;
 import com.watsonllc.chestlock.events.player.InventoryClick;
-import com.watsonllc.chestlock.events.player.PlayerChatPrompt;
 import com.watsonllc.chestlock.events.player.PlayerInteract;
 import com.watsonllc.chestlock.events.player.PlayerJoin;
-import com.watsonllc.chestlock.events.player.PlayerQuit;
-import com.watsonllc.chestlock.gui.MenuListener;
 import com.watsonllc.chestlock.logic.DebugAction;
 import com.watsonllc.chestlock.logic.IntrusionAlert;
 
@@ -34,9 +31,6 @@ public class Events {
                 pm.registerEvents(new InventoryClick(), Main.instance);
 		pm.registerEvents(new PlayerInteract(), Main.instance);
 		pm.registerEvents(new PlayerJoin(), Main.instance);
-		pm.registerEvents(new PlayerChatPrompt(), Main.instance);
-		pm.registerEvents(new PlayerQuit(), Main.instance);
-		pm.registerEvents(new MenuListener(), Main.instance);
 		
 		//pm.registerEvents(new AddOwner(), Main.instance);
 		//pm.registerEvents(new MakePublic(), Main.instance);
