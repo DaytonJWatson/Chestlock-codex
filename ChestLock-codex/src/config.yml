@@ -15,7 +15,7 @@ settings:
   updateChecker: true
 
   # Prefix for all messages. Leave blank to disable.
-  prefix: '&8[&6ChestLock&8] &7 '
+  prefix: '&6[ChestLock]&7 '
   
   # Automatically lock chests when theyre placed
   autoLock: true
@@ -41,6 +41,11 @@ settings:
   sortInventoryEnabled: false
   sortBy: 'type'
   sortWith: 'DOUBLE_CLICK'
+
+  # Optional GUI menus
+  gui:
+    enabled: true
+    command-opens: true
   
   # Allows players to Shift + Left Click locks with Redstone to be alerted of intruders.
   intrusionAlerts: true
@@ -70,30 +75,57 @@ lockables:
 
 messages:
   adjacentToLock: '&7You &ccant &7create locks adjacent to locks you dont own'
-  bypassOff: '&7[&6A&7] &cDisabled &7bypass mode'
-  bypassOn: '&7[&6A&7] &aEnabled &7bypass mode'
-  bypassWarning: '&cYou are currently bypassing ChestLock controller so no lock was created, use &7/chestlock bypass &cto create locks again'
-  cancelAction: '&cCancelling Action&8: &7%action%'
+  bypassOff: '&cBypass mode disabled'
+  bypassOn: '&aBypass mode enabled'
+  bypassWarning: '&cYou are currently bypassing ChestLock. Use &7/cl bypass off &cto create locks again'
+  cancelAction: '&cAction cancelled&8: &7%action%'
   claimLock: '&7You &aclaimed &7a %type% as your lock'
-  claimLockTip: '&7Right click the lock that you would like to &aclaim ownership &7of'
-  commandTimeout: '&cCommand Timeout&8: &7%action%'
+  commandTimeout: '&c%action% mode expired. &7%next%'
   createLock: '&7You &acreated &7a lock'
-  destroyLockTip: '&7Right click the lock that you would like to &cdestroy'
   destroyedLock: '&7%type% lock has been &cdestroyed&7'
   invalidClaimType: '&7This &ccant &7be claimed'
   invalidInstance: '&cInvalid user instance, this command can only be ran by Players'
   invalidLock: '&cInvalid lock'
+  invalidRadius: '&cInvalid radius. Use a number like 16 or 64'
+  invalidScope: '&cInvalid scope. Use SERVER, a player name, a radius, or a world name'
+  invalidWorld: '&cInvalid world'
   invalidOwner: '&7This lock is owned by &c%player%'
   invalidShareOwner: '&c%target% is not an owner of this lock'
   makePrivate: '&7You made this lock &cprivate'
   makePublic: '&7You made this lock &apublic'
-  makePublicTip: '&7Right click the lock that you would like to &amake public'
   noPermission: '&cYou dont have permission to do that'
+  noActionToCancel: '&cNo active action to cancel'
+  noModeActive: '&7No active mode'
   removeLock: '&7You &cremoved &7a lock'
   shareLock: '&7You &asuccessfully &7shared ownership with %target%'
-  shareLockTip: '&7Right click the lock that you would like to &agrant ownership &7for %target%'
   unshareLock: '&7You &asuccessfully &7removed ownership for %target%'
-  unshareLockTip: '&7Right click the lock that you would like to &cremove ownership &7for %target%'
+  modeDisabled: '&7%action% mode disabled'
+  modeClaim: '&6Claim mode&7: Right-click a container to lock it. Type &e/cl cancel &7to exit.'
+  modeDestroy: '&6Destroy mode&7: Right-click a container to remove its lock. Type &e/cl cancel &7to exit.'
+  modePublic: '&6Public mode&7: Right-click a container to make it public. Type &e/cl cancel &7to exit.'
+  modeAddOwner: '&6Add owner mode&7: Right-click a container to add &e%target%&7. Type &e/cl cancel &7to exit.'
+  modeRemoveOwner: '&6Remove owner mode&7: Right-click a container to remove &e%target%&7. Type &e/cl cancel &7to exit.'
+  nextClaim: 'Use &e/cl claim &7then right-click a container.'
+  nextDestroy: 'Use &e/cl destroy &7then right-click a container.'
+  nextPublic: 'Use &e/cl public &7then right-click a container.'
+  nextAddOwner: 'Use &e/cl add %target% &7then right-click a container.'
+  nextRemoveOwner: 'Use &e/cl remove %target% &7then right-click a container.'
+  statusHeader: '&6Status'
+  statusMode: '&7Mode: &e%mode%'
+  statusBypass: '&7Bypass: &e%state%'
+  statusGroup: '&7Selected group: &e%group%'
+  statusTimeRemaining: '&7Time remaining: &e%timeout%s'
+  statusTarget: '&7Target: &e%target%'
+  promptAddOwner: '&7Type the player name to add as owner. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptRemoveOwner: '&7Type the player name to remove as owner. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptGroupCreate: '&7Type the new group name. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptGroupInvite: '&7Type the player to invite. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptGroupRemove: '&7Type the player to remove. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptGroupSelect: '&7Type the group name to select. Type &e/cl cancel &7or &ecancel &7to abort.'
+  promptTagHoppers: '&7Type: &e<OWNER|SERVER> <radius|world> [minecarts] &7(Type cancel to abort)'
+  taghoppersStarted: '&7Tagging hoppers in &e%chunks% &7loaded chunks...'
+  taghoppersProgress: '&7Tagged &e%hoppers% &7hoppers, &e%minecarts% &7minecarts...'
+  taghoppersDone: '&aTagged &e%hoppers% &ahoppers%minecarts%'
 
   groupCreated: '&7You created group &a%group%'
   groupExists: '&cA group with that name already exists'
@@ -102,24 +134,26 @@ messages:
   groupMissing: '&cGroup &7%group% &cdoes not exist'
   groupNotOwner: '&cOnly the group owner can do that'
   groupInviteSent: '&7You invited &a%target% &7to group &6%group%'
-  groupInviteReceived: '&7You were invited to join &6%group% &7by &a%player%&7. Use &6/chestlock group accept %group%&7 or &6/chestlock group decline %group%'
+  groupInviteReceived: '&7You were invited to join &6%group% &7by &a%player%&7. Use &6/cl group accept %group%&7 or &6/cl group decline %group%'
   groupInviteAlreadySent: '&c%target% already has a pending invite'
   groupInviteAccepted: '&7You joined group &a%group%'
   groupInviteDeclined: '&7You declined the invite to &c%group%'
   groupInviteMissing: '&cNo pending invite found for &7%group%'
   groupInviteNone: '&cYou do not have any pending invites'
-  groupInviteMultiple: '&cYou have multiple invites. Use /chestlock group accept <group> or decline <group>'
+  groupInviteMultiple: '&cYou have multiple invites. Use /cl group accept <group> or decline <group>'
   groupInvites: '&7Pending invites: &f%invites%'
   groupNoInvites: '&cNo pending invites'
   groupMemberRemoved: '&7You &cremoved &7%target% from group &6%group%'
   groupMemberMissing: '&c%target% is not in that group'
   groupMemberExists: '&cThat player is already in the group'
   groupTargetAlreadyIn: '&c%target% is already in group &7%group%'
-  groupCannotRemoveSelf: '&cUse /chestlock group leave to leave your group'
+  groupCannotRemoveSelf: '&cUse /cl group leave to leave your group'
   groupLeft: '&7You left group &c%group%'
   groupMembers: '&7Group &6%group% &7members: &f%members%'
   groupNoMembers: '&cNo members found'
   groupNotInGroup: '&cYou are not currently in a group'
+  groupSelected: '&7Selected group set to &6%group%'
+  groupSelectInvalid: '&cYou are not a member of &7%group%'
   
   # Intrusion Alert
   # Shift-Left-Click a chest with redstone in your hand

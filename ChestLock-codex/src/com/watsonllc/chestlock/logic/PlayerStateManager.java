@@ -10,8 +10,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.watsonllc.chestlock.Main;
 import com.watsonllc.chestlock.config.Config;
+import com.watsonllc.chestlock.logic.ActionMessages;
 
 public final class PlayerStateManager {
+    public static final long ACTION_TIMEOUT_MILLIS = 15000L;
     private static final Map<UUID, PlayerState> STATES = new HashMap<>();
 
     private PlayerStateManager() {
@@ -31,12 +33,19 @@ public final class PlayerStateManager {
     }
 
     public static void startAction(Player player, PlayerActionType type, boolean toggle, String target) {
-        getState(player).startAction(type, new ActionState(toggle, target));
+        long now = System.currentTimeMillis();
+        getState(player).startAction(type, new ActionState(toggle, target, now, now + ACTION_TIMEOUT_MILLIS));
     }
 
     public static void clearAction(Player player, PlayerActionType type) {
         PlayerState state = getState(player);
         state.clearAction(type);
+        cleanupIfIdle(player, state);
+    }
+
+    public static void clearAllActions(Player player) {
+        PlayerState state = getState(player);
+        state.clearActions();
         cleanupIfIdle(player, state);
     }
 
@@ -48,12 +57,15 @@ public final class PlayerStateManager {
                     return;
                 }
 
+                ActionState state = getAction(player, type);
                 clearAction(player, type);
                 String commandTimeout = Config.getString("messages.commandTimeout");
                 commandTimeout = commandTimeout.replace("%action%", actionName);
+                String nextStep = ActionMessages.getNextStep(type, state == null ? null : state.getTarget());
+                commandTimeout = commandTimeout.replace("%next%", nextStep);
                 player.sendMessage(commandTimeout);
             }
-        }.runTaskLater(Main.instance, 20 * 15);
+        }.runTaskLater(Main.instance, (ACTION_TIMEOUT_MILLIS / 1000) * 20);
     }
 
     public static boolean isBypassing(Player player) {
@@ -82,6 +94,43 @@ public final class PlayerStateManager {
         getState(player).setBypassWarned(false);
     }
 
+    public static String getSelectedGroup(Player player) {
+        return getState(player).getSelectedGroup();
+    }
+
+    public static void setSelectedGroup(Player player, String groupName) {
+        PlayerState state = getState(player);
+        state.setSelectedGroup(groupName);
+    }
+
+    public static void clearState(Player player) {
+        STATES.remove(player.getUniqueId());
+    }
+
+    public static PlayerActionType getPrimaryAction(Player player) {
+        return getState(player).getPrimaryAction();
+    }
+
+    public static long getActionTimeRemainingSeconds(Player player, PlayerActionType type) {
+        ActionState state = getAction(player, type);
+        if (state == null)
+            return 0L;
+        long remaining = state.getExpiresAtMillis() - System.currentTimeMillis();
+        return Math.max(0L, remaining / 1000L);
+    }
+
+    public static void forEachActiveAction(ActionConsumer consumer) {
+        for (Map.Entry<UUID, PlayerState> entry : STATES.entrySet()) {
+            PlayerState state = entry.getValue();
+            if (state.actions.isEmpty())
+                continue;
+            PlayerActionType primary = state.getPrimaryAction();
+            if (primary == null)
+                continue;
+            consumer.accept(entry.getKey(), primary, state.getAction(primary));
+        }
+    }
+
     private static PlayerState getState(Player player) {
         return STATES.computeIfAbsent(player.getUniqueId(), uuid -> new PlayerState());
     }
@@ -96,6 +145,7 @@ public final class PlayerStateManager {
         private final EnumMap<PlayerActionType, ActionState> actions = new EnumMap<>(PlayerActionType.class);
         private boolean bypassing;
         private boolean bypassWarned;
+        private String selectedGroup;
 
         public boolean hasAction(PlayerActionType type) {
             return actions.containsKey(type);
@@ -111,6 +161,10 @@ public final class PlayerStateManager {
 
         public void clearAction(PlayerActionType type) {
             actions.remove(type);
+        }
+
+        public void clearActions() {
+            actions.clear();
         }
 
         public boolean isBypassing() {
@@ -129,8 +183,28 @@ public final class PlayerStateManager {
             this.bypassWarned = bypassWarned;
         }
 
-        public boolean isIdle() {
-            return actions.isEmpty() && !bypassing && !bypassWarned;
+        public String getSelectedGroup() {
+            return selectedGroup;
         }
+
+        public void setSelectedGroup(String selectedGroup) {
+            this.selectedGroup = selectedGroup;
+        }
+
+        public PlayerActionType getPrimaryAction() {
+            for (PlayerActionType type : PlayerActionType.values()) {
+                if (actions.containsKey(type))
+                    return type;
+            }
+            return null;
+        }
+
+        public boolean isIdle() {
+            return actions.isEmpty() && !bypassing && !bypassWarned && (selectedGroup == null || selectedGroup.isEmpty());
+        }
+    }
+
+    public interface ActionConsumer {
+        void accept(UUID playerId, PlayerActionType type, ActionState state);
     }
 }
